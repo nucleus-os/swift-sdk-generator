@@ -33,6 +33,7 @@ package struct LinuxRecipe: SwiftSDKRecipe {
   let mainHostTriples: [Triple]
   let linuxDistribution: LinuxDistribution
   let targetSwiftSource: TargetSwiftSource
+  let targetSystemPackages: [FilePath]
   let hostSwiftSource: HostSwiftSource
   let versionsConfiguration: VersionsConfiguration
   package let logger: Logger
@@ -55,6 +56,7 @@ package struct LinuxRecipe: SwiftSDKRecipe {
     fromContainerImage: String?,
     hostSwiftPackagePath: String?,
     targetSwiftPackagePath: String?,
+    targetSystemPackagePaths: [String] = [],
     includeHostToolchain: Bool = false,
     logger: Logger
   ) throws {
@@ -92,6 +94,7 @@ package struct LinuxRecipe: SwiftSDKRecipe {
       mainHostTriples: hostTriples,
       linuxDistribution: linuxDistribution,
       targetSwiftSource: targetSwiftSource,
+      targetSystemPackages: targetSystemPackagePaths.map(FilePath.init),
       hostSwiftSource: hostSwiftSource,
       versionsConfiguration: versionsConfiguration,
       logger: logger
@@ -103,6 +106,7 @@ package struct LinuxRecipe: SwiftSDKRecipe {
     mainHostTriples: [Triple],
     linuxDistribution: LinuxDistribution,
     targetSwiftSource: TargetSwiftSource,
+    targetSystemPackages: [FilePath] = [],
     hostSwiftSource: HostSwiftSource,
     versionsConfiguration: VersionsConfiguration,
     logger: Logger
@@ -111,6 +115,7 @@ package struct LinuxRecipe: SwiftSDKRecipe {
     self.mainHostTriples = mainHostTriples
     self.linuxDistribution = linuxDistribution
     self.targetSwiftSource = targetSwiftSource
+    self.targetSystemPackages = targetSystemPackages
     self.hostSwiftSource = hostSwiftSource
     self.versionsConfiguration = versionsConfiguration
     self.logger = logger
@@ -258,7 +263,12 @@ package struct LinuxRecipe: SwiftSDKRecipe {
       itemsToDownload: { artifacts in itemsToDownload(from: artifacts) }
     )
 
-    if !self.shouldUseDocker {
+    if !self.targetSystemPackages.isEmpty {
+      try await generator.installDebianPackages(
+        self.targetSystemPackages,
+        sdkDirPath: sdkDirPath
+      )
+    } else if !self.shouldUseDocker {
       switch linuxDistribution {
       case .ubuntu(let version):
         try await generator.downloadDebianPackages(
