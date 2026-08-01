@@ -202,12 +202,45 @@ extension SwiftSDKGenerator {
       let downloadedFiles = try await self.downloadFiles(from: urls, to: tmpDir, client, engine)
       await report(downloadedFiles: downloadedFiles)
 
-      for fileName in urls.map(\.lastPathComponent) {
-        logger.debug("Extracting deb package...", metadata: ["fileName": .string(fileName)])
-        try await fs.unpack(file: tmpDir.appending(fileName), into: sdkDirPath)
-      }
+      try await installDebianPackages(
+        urls.map { tmpDir.appending($0.lastPathComponent) },
+        sdkDirPath: sdkDirPath,
+        fileSystem: fs
+      )
     }
 
+    try ensureLinuxLibrarySymlinks(sdkDirPath: sdkDirPath)
+  }
+
+  func installDebianPackages(
+    _ packages: [FilePath],
+    sdkDirPath: FilePath
+  ) async throws {
+    try await inTemporaryDirectory { fs, _ in
+      try await installDebianPackages(
+        packages,
+        sdkDirPath: sdkDirPath,
+        fileSystem: fs
+      )
+    }
+    try ensureLinuxLibrarySymlinks(sdkDirPath: sdkDirPath)
+  }
+
+  private func installDebianPackages(
+    _ packages: [FilePath],
+    sdkDirPath: FilePath,
+    fileSystem: FileSystem
+  ) async throws {
+    for package in packages.sorted(by: { $0.string < $1.string }) {
+      logger.debug(
+        "Extracting deb package...",
+        metadata: ["fileName": .string(package.lastComponent?.string ?? package.string)]
+      )
+      try await fileSystem.unpack(file: package, into: sdkDirPath)
+    }
+  }
+
+  private func ensureLinuxLibrarySymlinks(sdkDirPath: FilePath) throws {
     // Make sure we have /lib and /lib64, and if not symlink from /usr
     // This makes building from packages more consistent with copying from the Docker container
     let libDirectories = ["lib", "lib64"]

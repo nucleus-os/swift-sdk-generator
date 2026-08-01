@@ -174,6 +174,13 @@ extension GeneratorCLI {
     var targetSwiftPackagePath: String? = nil
 
     @Option(
+      help: """
+        Path to a pre-downloaded target system package. Repeat this option to provide a complete pinned package closure.
+        """
+    )
+    var targetSystemPackagePath: [String] = []
+
+    @Option(
       name: .customLong("host"),
       help: """
         The host triples of the bundle. Defaults to a triple or triples of the machine this generator is \
@@ -340,6 +347,7 @@ extension GeneratorCLI {
         fromContainerImage: self.fromContainerImage,
         hostSwiftPackagePath: self.generatorOptions.hostSwiftPackagePath,
         targetSwiftPackagePath: self.generatorOptions.targetSwiftPackagePath,
+        targetSystemPackagePaths: self.generatorOptions.targetSystemPackagePath,
         includeHostToolchain: self.generatorOptions.hostToolchain,
         logger: loggerWithLevel(from: self.generatorOptions)
       )
