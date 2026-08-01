@@ -42,15 +42,30 @@ struct GeneratorCLI: AsyncParsableCommand {
   ) async throws {
     let logger = loggerWithLevel(from: options)
     let elapsed = try await ContinuousClock().measure {
-      let generator = try await SwiftSDKGenerator(
-        bundleVersion: options.bundleVersion,
-        targetTriple: targetTriple,
-        artifactID: options.sdkName ?? recipe.defaultArtifactID,
-        bundleName: options.bundleName,
-        isIncremental: options.incremental,
-        isVerbose: options.verbose,
-        logger: logger
-      )
+      let artifactID = options.sdkName ?? recipe.defaultArtifactID
+      let generator: SwiftSDKGenerator
+      if let outputPath = options.outputPath {
+        generator = try await SwiftSDKGenerator(
+          bundleVersion: options.bundleVersion,
+          targetTriple: targetTriple,
+          artifactID: artifactID,
+          bundleName: options.bundleName,
+          sourceRoot: FilePath(outputPath),
+          isIncremental: options.incremental,
+          isVerbose: options.verbose,
+          logger: logger
+        )
+      } else {
+        generator = try await SwiftSDKGenerator(
+          bundleVersion: options.bundleVersion,
+          targetTriple: targetTriple,
+          artifactID: artifactID,
+          bundleName: options.bundleName,
+          isIncremental: options.incremental,
+          isVerbose: options.verbose,
+          logger: logger
+        )
+      }
 
       let generatorTask = Task {
         try await generator.run(recipe: recipe)
@@ -106,6 +121,13 @@ extension GeneratorCLI {
         """
     )
     var bundleName: String? = nil
+
+    @Option(
+      help: """
+        Directory that owns the generated Bundles and Artifacts directories. Defaults to the package source root.
+        """
+    )
+    var outputPath: String? = nil
 
     @Flag(
       help:
@@ -194,6 +216,9 @@ extension GeneratorCLI {
         } catch {
           throw ValidationError("--bundle-name is invalid: \(error)")
         }
+      }
+      if let outputPath, !FilePath(outputPath).isAbsolute {
+        throw ValidationError("--output-path must be absolute")
       }
     }
 

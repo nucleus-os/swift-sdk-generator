@@ -47,10 +47,9 @@ public actor SwiftSDKGenerator {
     )
   }
 
-  /// Designated initializer that exposes `sourceRoot` for tests, so they can
-  /// route generated bundles into a temporary directory instead of polluting
-  /// the package's working tree.
-  init(
+  /// Designated initializer for callers that keep generated bundles and caches
+  /// outside the generator package's source tree.
+  public init(
     bundleVersion: String,
     targetTriple: Triple,
     artifactID: String,
