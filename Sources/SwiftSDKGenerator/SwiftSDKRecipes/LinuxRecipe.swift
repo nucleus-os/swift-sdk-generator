@@ -94,7 +94,7 @@ package struct LinuxRecipe: SwiftSDKRecipe {
       mainHostTriples: hostTriples,
       linuxDistribution: linuxDistribution,
       targetSwiftSource: targetSwiftSource,
-      targetSystemPackages: targetSystemPackagePaths.map(FilePath.init),
+      targetSystemPackages: targetSystemPackagePaths.map { FilePath($0) },
       hostSwiftSource: hostSwiftSource,
       versionsConfiguration: versionsConfiguration,
       logger: logger
@@ -126,7 +126,11 @@ package struct LinuxRecipe: SwiftSDKRecipe {
       toolset.rootPath = nil
     }
 
-    var swiftCompilerOptions = ["-Xlinker", "-R/usr/lib/swift/linux/"]
+    var swiftCompilerOptions = [
+      "-Xlinker", "-R/usr/lib/swift/linux/",
+      "-Xcc", "-stdlib=libc++",
+      "-lc++",
+    ]
 
     // Swift 5.9 does not handle the `-use-ld` option properly:
     //   https://github.com/swiftlang/swift-package-manager/issues/7222
@@ -147,7 +151,7 @@ package struct LinuxRecipe: SwiftSDKRecipe {
 
     toolset.swiftCompiler = Toolset.ToolProperties(extraCLIOptions: swiftCompilerOptions)
 
-    toolset.cxxCompiler = Toolset.ToolProperties(extraCLIOptions: ["-lstdc++"])
+    toolset.cxxCompiler = Toolset.ToolProperties(extraCLIOptions: ["-stdlib=libc++"])
 
     // Don't include path to librarian if we're using the preinstalled toolchain
     // Workaround for https://github.com/swiftlang/swift-package-manager/issues/9035

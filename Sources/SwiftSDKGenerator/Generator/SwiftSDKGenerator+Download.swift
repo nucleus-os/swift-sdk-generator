@@ -229,7 +229,7 @@ extension SwiftSDKGenerator {
   private func installDebianPackages(
     _ packages: [FilePath],
     sdkDirPath: FilePath,
-    fileSystem: FileSystem
+    fileSystem: SwiftSDKGenerator
   ) async throws {
     for package in packages.sorted(by: { $0.string < $1.string }) {
       logger.debug(

@@ -26,6 +26,7 @@ final class LinuxRecipeTests: XCTestCase {
     fromContainerImage: String? = nil,
     hostSwiftPackagePath: String? = nil,
     targetSwiftPackagePath: String? = nil,
+    targetSystemPackagePaths: [String] = [],
     includeHostToolchain: Bool = true
   ) throws -> LinuxRecipe {
     try LinuxRecipe(
@@ -39,9 +40,20 @@ final class LinuxRecipeTests: XCTestCase {
       fromContainerImage: fromContainerImage,
       hostSwiftPackagePath: hostSwiftPackagePath,
       targetSwiftPackagePath: targetSwiftPackagePath,
+      targetSystemPackagePaths: targetSystemPackagePaths,
       includeHostToolchain: includeHostToolchain,
       logger: logger
     )
+  }
+
+  func testPinnedTargetSystemPackages() throws {
+    let packages = ["/packages/libc6.deb", "/packages/libc++.deb"]
+    let recipe = try createRecipe(
+      linuxDistribution: LinuxDistribution(name: .ubuntu, version: "24.04"),
+      targetSystemPackagePaths: packages
+    )
+
+    XCTAssertEqual(recipe.targetSystemPackages.map(\.string), packages)
   }
 
   func testToolOptionsForSwiftVersions() throws {
@@ -51,6 +63,8 @@ final class LinuxRecipeTests: XCTestCase {
         targetTriple: Triple("x86_64-unknown-linux-gnu"),
         expectedSwiftCompilerOptions: [
           "-Xlinker", "-R/usr/lib/swift/linux/",
+          "-Xcc", "-stdlib=libc++",
+          "-lc++",
           "-Xclang-linker", "--ld-path=ld.lld",
         ],
         expectedLinkerPath: nil
@@ -60,6 +74,8 @@ final class LinuxRecipeTests: XCTestCase {
         targetTriple: Triple("aarch64-unknown-linux-gnu"),
         expectedSwiftCompilerOptions: [
           "-Xlinker", "-R/usr/lib/swift/linux/",
+          "-Xcc", "-stdlib=libc++",
+          "-lc++",
           "-use-ld=lld",
         ],
         expectedLinkerPath: "ld.lld"
@@ -69,6 +85,8 @@ final class LinuxRecipeTests: XCTestCase {
         targetTriple: Triple("armv7-unknown-linux-gnueabihf"),
         expectedSwiftCompilerOptions: [
           "-Xlinker", "-R/usr/lib/swift/linux/",
+          "-Xcc", "-stdlib=libc++",
+          "-lc++",
           "-use-ld=lld",
           "-latomic",
         ],
@@ -90,7 +108,7 @@ final class LinuxRecipeTests: XCTestCase {
       )
       XCTAssertEqual(toolset.swiftCompiler?.extraCLIOptions, testCase.expectedSwiftCompilerOptions)
       XCTAssertEqual(toolset.linker?.path, testCase.expectedLinkerPath)
-      XCTAssertEqual(toolset.cxxCompiler?.extraCLIOptions, ["-lstdc++"])
+      XCTAssertEqual(toolset.cxxCompiler?.extraCLIOptions, ["-stdlib=libc++"])
       XCTAssertEqual(toolset.librarian?.path, "llvm-ar")
     }
   }
@@ -112,10 +130,12 @@ final class LinuxRecipeTests: XCTestCase {
       toolset.swiftCompiler?.extraCLIOptions,
       [
         "-Xlinker", "-R/usr/lib/swift/linux/",
+        "-Xcc", "-stdlib=libc++",
+        "-lc++",
         "-use-ld=lld",
       ]
     )
-    XCTAssertEqual(toolset.cxxCompiler?.extraCLIOptions, ["-lstdc++"])
+    XCTAssertEqual(toolset.cxxCompiler?.extraCLIOptions, ["-stdlib=libc++"])
     XCTAssert(toolset.librarian == nil)
     XCTAssert(toolset.linker == nil)
   }
