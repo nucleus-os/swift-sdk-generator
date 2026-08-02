@@ -129,6 +129,7 @@ package struct LinuxRecipe: SwiftSDKRecipe {
     var swiftCompilerOptions = [
       "-Xlinker", "-R/usr/lib/swift/linux/",
       "-Xcc", "-stdlib=libc++",
+      "-Xcc", "-Qunused-arguments",
       "-lc++",
     ]
 
