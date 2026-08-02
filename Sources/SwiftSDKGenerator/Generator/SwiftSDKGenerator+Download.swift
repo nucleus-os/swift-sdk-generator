@@ -198,46 +198,29 @@ extension SwiftSDKGenerator {
         "packageCount": .stringConvertible(urls.count),
       ]
     )
-    try await inTemporaryDirectory { fs, tmpDir in
+    try await inTemporaryDirectory { generator, tmpDir in
       let downloadedFiles = try await self.downloadFiles(from: urls, to: tmpDir, client, engine)
       await report(downloadedFiles: downloadedFiles)
 
-      try await installDebianPackages(
+      try await generator.installDebianPackages(
         urls.map { tmpDir.appending($0.lastPathComponent) },
-        sdkDirPath: sdkDirPath,
-        fileSystem: fs
+        sdkDirPath: sdkDirPath
       )
     }
-
-    try ensureLinuxLibrarySymlinks(sdkDirPath: sdkDirPath)
   }
 
   func installDebianPackages(
     _ packages: [FilePath],
     sdkDirPath: FilePath
   ) async throws {
-    try await inTemporaryDirectory { fs, _ in
-      try await installDebianPackages(
-        packages,
-        sdkDirPath: sdkDirPath,
-        fileSystem: fs
-      )
-    }
-    try ensureLinuxLibrarySymlinks(sdkDirPath: sdkDirPath)
-  }
-
-  private func installDebianPackages(
-    _ packages: [FilePath],
-    sdkDirPath: FilePath,
-    fileSystem: SwiftSDKGenerator
-  ) async throws {
     for package in packages.sorted(by: { $0.string < $1.string }) {
       logger.debug(
         "Extracting deb package...",
         metadata: ["fileName": .string(package.lastComponent?.string ?? package.string)]
       )
-      try await fileSystem.unpack(file: package, into: sdkDirPath)
+      try await unpack(file: package, into: sdkDirPath)
     }
+    try ensureLinuxLibrarySymlinks(sdkDirPath: sdkDirPath)
   }
 
   private func ensureLinuxLibrarySymlinks(sdkDirPath: FilePath) throws {
