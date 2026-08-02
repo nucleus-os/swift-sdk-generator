@@ -64,6 +64,7 @@ final class LinuxRecipeTests: XCTestCase {
         expectedSwiftCompilerOptions: [
           "-Xlinker", "-R/usr/lib/swift/linux/",
           "-Xcc", "-stdlib=libc++",
+          "-Xcc", "-Qunused-arguments",
           "-lc++",
           "-Xclang-linker", "--ld-path=ld.lld",
         ],
@@ -75,6 +76,7 @@ final class LinuxRecipeTests: XCTestCase {
         expectedSwiftCompilerOptions: [
           "-Xlinker", "-R/usr/lib/swift/linux/",
           "-Xcc", "-stdlib=libc++",
+          "-Xcc", "-Qunused-arguments",
           "-lc++",
           "-use-ld=lld",
         ],
@@ -86,6 +88,7 @@ final class LinuxRecipeTests: XCTestCase {
         expectedSwiftCompilerOptions: [
           "-Xlinker", "-R/usr/lib/swift/linux/",
           "-Xcc", "-stdlib=libc++",
+          "-Xcc", "-Qunused-arguments",
           "-lc++",
           "-use-ld=lld",
           "-latomic",
@@ -131,6 +134,7 @@ final class LinuxRecipeTests: XCTestCase {
       [
         "-Xlinker", "-R/usr/lib/swift/linux/",
         "-Xcc", "-stdlib=libc++",
+        "-Xcc", "-Qunused-arguments",
         "-lc++",
         "-use-ld=lld",
       ]
