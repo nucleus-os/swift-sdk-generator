@@ -26,6 +26,7 @@ enum GeneratorError: Error {
   case distributionSupportsOnlyDockerGenerator(LinuxDistribution)
   case distributionDoesNotSupportArchitecture(LinuxDistribution, targetArchName: String)
   case fileDoesNotExist(FilePath)
+  case executableNotFound(String)
   case fileDownloadFailed(URL, String)
   case debianPackagesListDownloadRequiresXz
   case packagesListDecompressionFailure
@@ -67,6 +68,8 @@ extension GeneratorError: CustomStringConvertible {
         """
     case let .fileDoesNotExist(filePath):
       return "Expected to find a file at path `\(filePath)`."
+    case let .executableNotFound(name):
+      return "Expected to find the `\(name)` executable on PATH."
     case let .fileDownloadFailed(url, status):
       return
         "File could not be downloaded from a URL `\(url)`, the server returned status `\(status)`."
