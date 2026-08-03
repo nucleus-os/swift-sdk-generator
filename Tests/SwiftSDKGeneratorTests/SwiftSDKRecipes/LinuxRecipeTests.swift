@@ -141,7 +141,7 @@ final class LinuxRecipeTests: XCTestCase {
     )
     XCTAssertEqual(toolset.cxxCompiler?.extraCLIOptions, ["-stdlib=libc++"])
     XCTAssert(toolset.librarian == nil)
-    XCTAssertEqual(toolset.linker?.path, "swift.xctoolchain/usr/bin/ld.lld")
+    XCTAssertNil(toolset.linker)
   }
 
   func runItemsToDownloadTestCase(

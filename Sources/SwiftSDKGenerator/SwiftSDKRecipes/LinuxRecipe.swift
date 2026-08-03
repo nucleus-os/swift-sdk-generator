@@ -143,11 +143,9 @@ package struct LinuxRecipe: SwiftSDKRecipe {
       // aggregation. GNU ld drops SHF_GNU_RETAIN from that `-r` output, which
       // lets the final section-GC pass discard Swift runtime metadata indices.
       // Selecting LLD here covers both relocatable and final links.
-      let linkerPath =
-        self.hostSwiftSource == .preinstalled
-        ? "swift.xctoolchain/usr/bin/ld.lld"
-        : "ld.lld"
-      toolset.linker = Toolset.ToolProperties(path: linkerPath)
+      if self.hostSwiftSource != .preinstalled {
+        toolset.linker = Toolset.ToolProperties(path: "ld.lld")
+      }
 
       // 32-bit architectures require libatomic
       if let arch = targetTriple.arch, arch.is32Bit {
@@ -378,8 +376,6 @@ package struct LinuxRecipe: SwiftSDKRecipe {
         logger.info("Fixing `swift-autolink-extract` symlink...")
         try await generator.createSymlink(at: autolinkExtractPath, pointingTo: "swift")
       }
-    } else if !self.versionsConfiguration.swiftVersion.hasPrefix("5.9") {
-      try await generator.preparePreinstalledLLDLinker()
     }
 
     return SwiftSDKProduct(sdkDirPath: sdkDirPath, hostTriples: self.hostTriples)
