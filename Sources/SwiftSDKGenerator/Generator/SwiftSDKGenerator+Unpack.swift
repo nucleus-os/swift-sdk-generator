@@ -12,6 +12,7 @@
 
 import Helpers
 
+import struct Foundation.URL
 import struct SystemPackage.FilePath
 
 let unusedTargetPlatforms = [
@@ -157,5 +158,19 @@ extension SwiftSDKGenerator {
     }
 
     try self.copy(from: unpackedLLDPath, to: toolchainLLDPath)
+  }
+
+  func preparePreinstalledLLDLinker() async throws {
+    logger.info("Copying the preinstalled `ld.lld` linker...")
+    guard let linkerPath = try await which("ld.lld") else {
+      throw GeneratorError.executableNotFound("ld.lld")
+    }
+
+    let resolvedLinkerPath = URL(fileURLWithPath: linkerPath).resolvingSymlinksInPath().path
+    try self.createDirectoryIfNeeded(at: pathsConfiguration.toolchainBinDirPath)
+    try self.copy(
+      from: FilePath(resolvedLinkerPath),
+      to: pathsConfiguration.toolchainBinDirPath.appending("ld.lld")
+    )
   }
 }
