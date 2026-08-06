@@ -130,7 +130,7 @@ package struct LinuxRecipe: SwiftSDKRecipe {
       "-Xlinker", "-R/usr/lib/swift/linux/",
       "-Xcc", "-stdlib=libc++",
       "-Xcc", "-Qunused-arguments",
-      "-lc++",
+      "-Xclang-linker", "-stdlib=libc++",
     ]
 
     // Swift 5.9 does not handle the `-use-ld` option properly:

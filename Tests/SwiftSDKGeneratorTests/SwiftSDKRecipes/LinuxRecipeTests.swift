@@ -65,7 +65,7 @@ final class LinuxRecipeTests: XCTestCase {
           "-Xlinker", "-R/usr/lib/swift/linux/",
           "-Xcc", "-stdlib=libc++",
           "-Xcc", "-Qunused-arguments",
-          "-lc++",
+          "-Xclang-linker", "-stdlib=libc++",
           "-Xclang-linker", "--ld-path=ld.lld",
         ],
         expectedLinkerPath: nil
@@ -77,7 +77,7 @@ final class LinuxRecipeTests: XCTestCase {
           "-Xlinker", "-R/usr/lib/swift/linux/",
           "-Xcc", "-stdlib=libc++",
           "-Xcc", "-Qunused-arguments",
-          "-lc++",
+          "-Xclang-linker", "-stdlib=libc++",
           "-use-ld=lld",
         ],
         expectedLinkerPath: "ld.lld"
@@ -89,7 +89,7 @@ final class LinuxRecipeTests: XCTestCase {
           "-Xlinker", "-R/usr/lib/swift/linux/",
           "-Xcc", "-stdlib=libc++",
           "-Xcc", "-Qunused-arguments",
-          "-lc++",
+          "-Xclang-linker", "-stdlib=libc++",
           "-use-ld=lld",
           "-latomic",
         ],
@@ -135,7 +135,7 @@ final class LinuxRecipeTests: XCTestCase {
         "-Xlinker", "-R/usr/lib/swift/linux/",
         "-Xcc", "-stdlib=libc++",
         "-Xcc", "-Qunused-arguments",
-        "-lc++",
+        "-Xclang-linker", "-stdlib=libc++",
         "-use-ld=lld",
       ]
     )
